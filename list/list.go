@@ -106,6 +106,10 @@ func (l *List) Back() *ListNode {
 	return l.tail.prev
 }
 
+func (l *List) End() *ListNode {
+	return l.tail
+}
+
 func (l *List) PushFront(value interface{}) *ListNode {
 	l.size++
 	return l.head.InsertAfter(value)
@@ -124,5 +128,42 @@ func (l *List) Insert(index int, value interface{}) (*ListNode, error) {
 	for i := 0; i < index; i++ {
 		cur = cur.next
 	}
+	l.size++
 	return cur.InsertBefore(value), nil
+}
+
+func (l *List) Remove(index int, value interface{}) (*ListNode, error) {
+	if index >= l.size || index < 0 {
+		return nil, errors.New("illegal index, out of bounds")
+	}
+	cur := l.head.next
+	for i := 0; i < index; i++ {
+		cur = cur.next
+	}
+	prev := cur.prev
+	next := cur.next
+	prev.next = next
+	next.prev = prev
+	l.size--
+	return cur, nil
+}
+
+func (l *List) RemoveRange(beginIndex int, endIndex int) error {
+	if (beginIndex >= l.Size() || beginIndex < 0) ||
+		(endIndex > l.Size() || endIndex < 0) || (beginIndex >= endIndex) {
+		return errors.New("illegal index, out of bounds")
+	}
+	cur := l.head.next
+	for i := 0; i < beginIndex; i++ {
+		cur = cur.next
+	}
+	beginNode := cur.prev
+	for i := beginIndex; i < endIndex; i++ {
+		cur = cur.next
+	}
+	endNode := cur
+	beginNode.next = endNode
+	endNode.prev = beginNode
+	l.size -= endIndex - beginIndex
+	return nil
 }
