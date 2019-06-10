@@ -1,6 +1,7 @@
-package linkedlist
+package list
 
 import (
+	"GoSTL/algorithms"
 	"errors"
 )
 
@@ -87,7 +88,7 @@ func NewList(size int, value interface{}) (*List, error) {
 
 }
 
-func (l *List) Size() int {
+func (l *List) Len() int {
 	return l.size
 }
 
@@ -149,8 +150,8 @@ func (l *List) Remove(index int, value interface{}) (*ListNode, error) {
 }
 
 func (l *List) RemoveRange(beginIndex int, endIndex int) error {
-	if (beginIndex >= l.Size() || beginIndex < 0) ||
-		(endIndex > l.Size() || endIndex < 0) || (beginIndex >= endIndex) {
+	if (beginIndex >= l.Len() || beginIndex < 0) ||
+		(endIndex > l.Len() || endIndex < 0) || (beginIndex >= endIndex) {
 		return errors.New("illegal index, out of bounds")
 	}
 	cur := l.head.next
@@ -166,4 +167,82 @@ func (l *List) RemoveRange(beginIndex int, endIndex int) error {
 	endNode.prev = beginNode
 	l.size -= endIndex - beginIndex
 	return nil
+}
+
+func (l *List) Get(i int) *ListNode {
+	if i >= l.Len() || i < 0 {
+		return nil
+	}
+	cur := l.head.next
+	for i > 0 {
+		cur = cur.next
+		i--
+	}
+	return cur
+}
+
+func (l *List) Swap(i, j int) {
+	if i == j {
+		return
+	}
+	if i > j {
+		i, j = j, i
+	}
+	a := l.Get(i)
+	b := l.Get(j)
+	if a.next == b || b.next == a {
+		aPrev := a.prev
+		bNext := b.next
+		aPrev.next = b
+		bNext.prev = a
+		b.prev = aPrev
+		a.next = bNext
+		a.prev = b
+		b.next = a
+	} else {
+		aPrev := a.prev
+		aNext := a.next
+		bPrev := b.prev
+		bNext := b.next
+		aPrev.next = b
+		b.prev = aPrev
+		b.next = aNext
+		aNext.prev = b
+		a.prev = bPrev
+		a.next = bNext
+		bPrev.next = a
+		bNext.prev = a
+	}
+
+}
+
+func (l *List) Less(i, j int) bool {
+	a := l.Get(i)
+	b := l.Get(j)
+	if comparable, ok := a.Value.(algorithms.Comparable); ok {
+		return comparable.Less(b.Value)
+	} else {
+		// directly comparison between basic types
+		switch a.Value.(type) {
+		case int:
+			return a.Value.(int) < b.Value.(int)
+		case int8:
+			return a.Value.(int8) < b.Value.(int8)
+		case int16:
+			return a.Value.(int16) < b.Value.(int16)
+		case int32:
+			return a.Value.(int32) < b.Value.(int32)
+		case int64:
+			return a.Value.(int64) < b.Value.(int64)
+		case float32:
+			return a.Value.(float32) < b.Value.(float32)
+		case float64:
+			return a.Value.(float64) < b.Value.(float64)
+		case string:
+			return a.Value.(string) < b.Value.(string)
+		default:
+			panic("element type is not basic type and didn't implement Less interface")
+		}
+	}
+
 }
