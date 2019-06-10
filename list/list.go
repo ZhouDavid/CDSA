@@ -222,7 +222,7 @@ func (l *List) Less(i, j int) bool {
 	if comparable, ok := a.Value.(algorithms.Comparable); ok {
 		return comparable.Less(b.Value)
 	} else {
-		// directly comparison between basic types
+		// directly compare between basic types
 		switch a.Value.(type) {
 		case int:
 			return a.Value.(int) < b.Value.(int)
