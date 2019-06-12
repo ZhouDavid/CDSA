@@ -1,7 +1,7 @@
 package list
 
 import (
-	"GoSTL/algorithms"
+	"GoSTL/util"
 	"errors"
 )
 
@@ -219,30 +219,5 @@ func (l *List) Swap(i, j int) {
 func (l *List) Less(i, j int) bool {
 	a := l.Get(i)
 	b := l.Get(j)
-	if comparable, ok := a.Value.(algorithms.Comparable); ok {
-		return comparable.Less(b.Value)
-	} else {
-		// directly compare between basic types
-		switch a.Value.(type) {
-		case int:
-			return a.Value.(int) < b.Value.(int)
-		case int8:
-			return a.Value.(int8) < b.Value.(int8)
-		case int16:
-			return a.Value.(int16) < b.Value.(int16)
-		case int32:
-			return a.Value.(int32) < b.Value.(int32)
-		case int64:
-			return a.Value.(int64) < b.Value.(int64)
-		case float32:
-			return a.Value.(float32) < b.Value.(float32)
-		case float64:
-			return a.Value.(float64) < b.Value.(float64)
-		case string:
-			return a.Value.(string) < b.Value.(string)
-		default:
-			panic("element type is not basic type and didn't implement Less interface")
-		}
-	}
-
+	return util.Less(&(a.Value), &(b.Value))
 }

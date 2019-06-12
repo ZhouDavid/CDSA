@@ -1,156 +1,150 @@
 package vector
 
 import (
-	"GoSTL/algorithms"
+	"GoSTL/util"
 	"errors"
+	"reflect"
 )
 
 // Vector is a golang implementation of C++ STL vector
-type Vector []interface{}
+type Vector struct {
+	elems []interface{}
+}
 
 // New empty vector
-func New() Vector {
-	elems := make(Vector, 0, 1024)
-	return elems
+func New() *Vector {
+	return &Vector{
+		elems: make([]interface{}, 0, 1024),
+	}
 }
 
 // NewVector is a constructor of Vector
-func NewVector(size int, elem interface{}) Vector {
-	elems := make(Vector, size, size<<1)
+func NewVector(size int, elem interface{}) *Vector {
+	elems := make([]interface{}, size, size<<1)
 	for i := 0; i < size; i++ {
 		elems[i] = elem
 	}
-	return elems
+	return &Vector{
+		elems: elems,
+	}
 }
 
 //NewVectorFromSlice is a constructor of vector
-func NewVectorFromSlice(elems []interface{}) Vector {
-	arr := Vector(elems)
-	return arr
+func NewVectorFromSlice(slice interface{}) *Vector {
+	s := reflect.ValueOf(slice)
+	if s.Kind() == reflect.Slice {
+		elems := make([]interface{}, s.Len())
+		for i := 0; i < s.Len(); i++ {
+			elems[i] = s.Index(i).Interface()
+		}
+		return &Vector{
+			elems: elems,
+		}
+
+	} else {
+		panic("Given a non-slice type")
+	}
 }
 
 // Size
-func (arr Vector) Len() int {
-	return len(arr)
+func (v *Vector) Len() int {
+	return len(v.elems)
 }
 
 // Cap
-func (arr Vector) Cap() int {
-	return cap(arr)
+func (v *Vector) Cap() int {
+	return cap(v.elems)
 }
 
 // Empty
-func (arr Vector) Empty() bool {
-	if arr.Len() == 0 {
+func (v *Vector) Empty() bool {
+	if v.Len() == 0 {
 		return true
 	}
 	return false
 }
 
 // Get
-func (arr Vector) Get(index int) (interface{}, error) {
-	if index > arr.Len() || index < 0 {
+func (v *Vector) Get(index int) (interface{}, error) {
+	if index > v.Len() || index < 0 {
 		return nil, errors.New("illegal index, out of bounds")
 	}
-	return arr[index], nil
+	return v.elems[index], nil
 }
 
 // PushBack
-func (arr Vector) PushBack(elem interface{}) {
-	arr = append(arr, elem)
+func (v *Vector) PushBack(elem interface{}) {
+	v.elems = append(v.elems, elem)
 }
 
 // PopBack
-func (arr Vector) PopBack() (interface{}, error) {
-	size := len(arr)
-	if size == 0 {
+func (v *Vector) PopBack() (interface{}, error) {
+	n := v.Len()
+	if n == 0 {
 		return nil, errors.New("vector is empty, cannot pop element")
 	} else {
-		elem := arr[size-1]
-		arr = arr[:size-1]
+		elem := v.elems[n-1]
+		v.elems = v.elems[:n-1]
 		return elem, nil
 	}
 }
 
 // Insert
-func (arr Vector) Insert(index int, elem interface{}) error {
-	if index > arr.Len() || index < 0 {
+func (v *Vector) Insert(index int, elem interface{}) error {
+	if index > v.Len() || index < 0 {
 		return errors.New("illegal index, out of bounds")
 	}
-	if index == arr.Len() {
-		arr.PushBack(elem)
+	if index == v.Len() {
+		v.PushBack(elem)
 	} else {
-		arr = append(append(arr[:index], elem), arr[index+1:]...)
+		v.elems = append(append(v.elems[:index], elem), v.elems[index+1:]...)
 	}
 	return nil
 }
 
 // Insert Range
-func (arr Vector) InsertRange(beginIndex int, v []interface{}) error {
-	if beginIndex > arr.Len() || beginIndex < 0 {
+func (v *Vector) InsertRange(beginIndex int, e []interface{}) error {
+	if beginIndex > v.Len() || beginIndex < 0 {
 		return errors.New("illegal index, out of bounds")
 	}
-	if beginIndex == arr.Len() {
-		arr = append(arr[:beginIndex], v...)
+	if beginIndex == v.Len() {
+		v.elems = append(v.elems[:beginIndex], e...)
 	} else {
-		n := len(v)
-		arr = append(append(arr[:beginIndex], v...), arr[beginIndex+n:]...)
+		n := v.Len()
+		v.elems = append(append(v.elems[:beginIndex], e...), v.elems[beginIndex+n:]...)
 	}
 	return nil
 }
 
 // Remove
-func (arr Vector) Remove(index int) error {
-	if index >= arr.Len() || index < 0 {
+func (v Vector) Remove(index int) error {
+	if index >= v.Len() || index < 0 {
 		return errors.New("illegal index, out of bounds")
 	}
-	arr = append(arr[:index], arr[index+1:]...)
+	v.elems = append(v.elems[:index], v.elems[index+1:]...)
 	return nil
 }
 
 // Remove Range
-func (arr Vector) RemoveRange(beginIndex int, endIndex int) error {
-	if (beginIndex >= arr.Len() || beginIndex < 0) ||
-		(endIndex > arr.Len() || endIndex < 0) || (beginIndex >= endIndex) {
+func (v *Vector) RemoveRange(beginIndex int, endIndex int) error {
+	if (beginIndex >= v.Len() || beginIndex < 0) ||
+		(endIndex > v.Len() || endIndex < 0) || (beginIndex >= endIndex) {
 		return errors.New("illegal index, out of bounds")
 	}
-	if endIndex == arr.Len() {
-		arr = append(arr[:beginIndex])
+	if endIndex == v.Len() {
+		v.elems = append(v.elems[:beginIndex])
 	} else {
-		arr = append(arr[:beginIndex], arr[endIndex:]...)
+		v.elems = append(v.elems[:beginIndex], v.elems[endIndex:]...)
 	}
 	return nil
 }
 
 // Swap
-func (arr Vector) Swap(i, j int) {
-	arr[j], arr[i] = arr[i], arr[j]
+func (v *Vector) Swap(i, j int) {
+	v.elems[j], v.elems[i] = v.elems[i], v.elems[j]
 }
 
 // Less
-func (arr Vector) Less(i, j int) bool {
-	if comparable, ok := arr[i].(algorithms.Comparable); ok {
-		return comparable.Less(arr[j])
-	}
-	// directly comparison between basic types
-	switch arr[i].(type) {
-	case int:
-		return arr[i].(int) < arr[j].(int)
-	case int8:
-		return arr[i].(int8) < arr[j].(int8)
-	case int16:
-		return arr[i].(int16) < arr[j].(int16)
-	case int32:
-		return arr[i].(int32) < arr[j].(int32)
-	case int64:
-		return arr[i].(int64) < arr[j].(int64)
-	case float32:
-		return arr[i].(float32) < arr[j].(float32)
-	case float64:
-		return arr[i].(float64) < arr[j].(float64)
-	case string:
-		return arr[i].(string) < arr[j].(string)
-	default:
-		panic("element type is not basic type and didn't implement Less interface")
-	}
+func (v *Vector) Less(i, j int) bool {
+	return util.Less(&v.elems[i], &v.elems[j])
 }
