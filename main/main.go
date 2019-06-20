@@ -2,50 +2,27 @@ package main
 
 import (
 	"GoSTL/heap"
-	"GoSTL/list"
 	"GoSTL/vector"
 	"fmt"
 	"math/rand"
 	"sort"
+	"time"
 )
 
-type Test struct {
-	s string
-}
-
-func (t Test) change() {
-	t.s = "2"
-}
-
-func (t *Test) print() {
-	fmt.Println(t.s)
-}
-
 func main() {
-	// heap.Interface
-	// test vector
-	arr1 := vector.New()
-	for i := 0; i < 5; i++ {
-		arr1.PushBack(rand.Float64())
+	arrLen := 235098309
+	v := vector.NewVector(arrLen, 0)
+	for i := 0; i < arrLen; i++ {
+		v[i] = rand.Float64()
 	}
-	sort.Sort(arr1)
-	fmt.Printf("%v\n", *arr1)
-	// test list
-	l1 := list.New()
-	for i := 0; i < 10; i++ {
-		l1.PushBack(rand.Float64())
+	t1 := time.Now()
+	sort.Sort(v)
+	t2 := time.Now()
+	fmt.Printf("standard sort:%d\n", t2.Sub(t1))
+	h := heap.NewHeapFromSlice(v)
+	for h.Len() != 0 {
+		h.Pop()
 	}
-	l1.Insert(3, 123123.)
-	sort.Sort(l1)
-
-	arr2 := make([]int, 10, 10)
-	for i := 0; i < 10; i++ {
-		arr2[i] = 9 - i
-	}
-	vector.NewVectorFromSlice(arr2)
-	h := heap.NewHeapFromSlice(arr2)
-	fmt.Println(h.Len())
-	for i := 0; i < 10; i++ {
-		fmt.Println(h.Pop())
-	}
+	t3 := time.Now()
+	fmt.Printf("heap sort:%d", t3.Sub(t2))
 }
