@@ -1,52 +1,85 @@
 package heap
 
-import (
-	"GoSTL/util"
-	"reflect"
+const (
+	MIN_HEAP = iota
+	MAX_HEAP
 )
 
+type Heapable interface {
+	Len() int           // Len is the number of elements in the collection
+	Less(i, j int) bool // Whether the element with index i should sort before the element with index j.
+	Swap(i, j int)      // Swap swaps the elements with indexes i and j.
+	Push(interface{})
+	Pop() interface{}
+}
+
 type Heap struct {
-	elems []interface{}
+	data     Heapable
+	heapType int
 }
 
-func New() *Heap {
-	return &Heap{
-		elems: make([]interface{}, 0, 1024), // default capacity is 1024
-	}
-}
-
-func NewHeapFromSlice(slice interface{}) *Heap {
-	s := reflect.ValueOf(slice)
-	var elems []interface{}
-	if s.Kind() == reflect.Slice {
-		elems = make([]interface{}, s.Len())
-		for i := 0; i < s.Len(); i++ {
-			elems[i] = s.Index(i).Interface()
-		}
-	}
-	n := s.Len()
+func NewMinHeap(data Heapable) *Heap {
+	n := data.Len()
 	h := &Heap{
-		elems: elems,
+		data:     data,
+		heapType: MIN_HEAP,
 	}
 	for i := n/2 - 1; i >= 0; i-- {
-		h.siftDown(i)
+		h.minSiftDown(i, n)
 	}
 	return h
 }
 
-func (h *Heap) swap(i, j int) {
-	h.elems[i], h.elems[j] = h.elems[j], h.elems[i]
+func NewMaxHeap(data Heapable) *Heap {
+	n := data.Len()
+	h := &Heap{
+		data:     data,
+		heapType: MAX_HEAP,
+	}
+	for i := n/2 - 1; i >= 0; i-- {
+		h.maxSiftDown(i, n)
+	}
+	return h
 }
 
-func (h *Heap) Len() int {
-	return len(h.elems)
+func (h *Heap) Swap(i, j int) {
+	h.data.Swap(i, j)
+}
+
+func (h *Heap) Pop() interface{} {
+	n := h.data.Len() - 1
+	h.data.Swap(0, n)
+	h.SiftDown(0, n)
+	return h.Pop() // pop back
+}
+
+func (h *Heap) Push(e interface{}) {
+	h.data.Push(e)             // push back
+	h.SiftUp(h.data.Len() - 1) //
+}
+
+func (h *Heap) SiftDown(i int, n int) bool {
+	switch h.heapType {
+	case MIN_HEAP:
+		return h.minSiftDown(i, n)
+	default: // max heap
+		return h.maxSiftDown(i, n)
+	}
+}
+
+func (h *Heap) SiftUp(i int) bool {
+	switch h.heapType {
+	case MIN_HEAP:
+		return h.minSiftUp(i)
+	default: // max heap
+		return h.maxSiftUp(i)
+	}
 }
 
 // siftdown the element at index i,
 // return whether it's going down
 // only support minimum heap
-func (h *Heap) siftDown(i int) bool {
-	n := h.Len()
+func (h *Heap) minSiftDown(i int, n int) bool {
 	i0 := i
 	for {
 		j1 := 2*i + 1
@@ -54,11 +87,11 @@ func (h *Heap) siftDown(i int) bool {
 			break
 		}
 		j := j1 // j is the smaller value of i's two children
-		if j2 := j1 + 1; j2 < n && util.Less(&h.elems[j2], &h.elems[j1]) {
+		if j2 := j1 + 1; j2 < n && h.data.Less(j2, j1) {
 			j = j2 // right child is smaller
 		}
-		if util.Less(&h.elems[j], &h.elems[i]) { // smaller child is smaller than i
-			h.swap(i, j)
+		if h.data.Less(j, i) { // smaller child is smaller than i
+			h.data.Swap(i, j)
 			i = j
 		} else {
 			break // i is the smallest, break
@@ -69,16 +102,17 @@ func (h *Heap) siftDown(i int) bool {
 
 // siftup the element at index i
 // return whether it's up
-func (h *Heap) siftUp(i int) bool {
-	n := h.Len()
+func (h *Heap) minSiftUp(i int) bool {
+	n := h.data.Len()
 	i0 := i
-	j := (i+1)/2 - 1
 	for {
+		j := (i+1)/2 - 1
 		if j < 0 || j >= n {
 			break
 		}
-		if util.Less(&h.elems[i], &h.elems[j]) {
-			h.swap(i, j)
+		if h.data.Less(i, j) {
+			h.data.Swap(i, j)
+			i = j
 		} else {
 			break
 		}
@@ -86,17 +120,43 @@ func (h *Heap) siftUp(i int) bool {
 	return i < i0
 }
 
-func (h *Heap) Pop() interface{} {
-	n := h.Len()
-	e := h.elems[0]
-	h.elems[0] = h.elems[n-1]
-	h.elems = h.elems[:n-1]
-	h.siftDown(0)
-	return e
+func (h *Heap) maxSiftDown(i int, n int) bool {
+	i0 := i
+	for {
+		j1 := 2*i + 1
+		if j1 >= n || j1 < 0 {
+			break
+		}
+		j := j1 // j is the larger value of i's two children
+		if j2 := j1 + 1; j2 < n && h.data.Less(j1, j2) {
+			j = j2 // right child is larger
+		}
+		if h.data.Less(i, j) { // larger child is largert than i
+			h.data.Swap(i, j)
+			i = j
+		} else {
+			break // i is the largest, break
+		}
+	}
+	return i > i0
 }
 
-func (h *Heap) Push(e interface{}) {
-	h.elems = append(h.elems, e)
-	n := h.Len()
-	h.siftUp(n - 1)
+// siftup the element at index i
+// return whether it's up
+func (h *Heap) maxSiftUp(i int) bool {
+	n := h.data.Len()
+	i0 := i
+	for {
+		j := (i+1)/2 - 1
+		if j < 0 || j >= n {
+			break
+		}
+		if h.data.Less(j, i) { //parent is smaller than child, need swap
+			h.data.Swap(i, j)
+			i = j
+		} else {
+			break // parent is larget, no need swap
+		}
+	}
+	return i < i0
 }

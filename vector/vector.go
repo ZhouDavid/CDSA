@@ -10,44 +10,41 @@ import (
 type Vector []interface{}
 
 // New empty vector
-func New() Vector {
-	return make(Vector, 0, 1024)
+func New() *Vector {
+	v := make(Vector, 0, 1024)
+	return &v
 }
 
 // NewVector is a constructor of Vector
-func NewVector(size int, elem interface{}) Vector {
-	elems := make([]interface{}, size, size<<1)
+func NewVector(size int, elem interface{}) *Vector {
+	elems := make(Vector, size, size<<1)
 	for i := 0; i < size; i++ {
 		elems[i] = elem
 	}
-	return elems
+	return &elems
 }
 
 //NewVectorFromSlice is a constructor of vector
-func NewVectorFromSlice(slice interface{}) Vector {
+func NewVectorFromSlice(slice interface{}) *Vector {
 	s := reflect.ValueOf(slice)
 	if s.Kind() == reflect.Slice {
-		elems := make([]interface{}, s.Len())
+		elems := make(Vector, s.Len())
 		for i := 0; i < s.Len(); i++ {
 			elems[i] = s.Index(i).Interface()
 		}
-		return elems
+		return &elems
 
 	} else {
 		panic("Given a non-slice type")
 	}
 }
 
-// Size
-// func (v *Vector) Len() int {
-// 	return len(*v)
-// }
-
-func (v Vector) Len() int {
-	return len(v)
+// Length
+func (v *Vector) Len() int {
+	return len(*v)
 }
 
-// Cap
+// Capacity
 func (v *Vector) Cap() int {
 	return cap(*v)
 }
@@ -60,13 +57,27 @@ func (v *Vector) Empty() bool {
 	return false
 }
 
-// // Get
-// func (v *Vector) Get(index int) (interface{}, error) {
-// 	if index > v.Len() || index < 0 {
-// 		return nil, errors.New("illegal index, out of bounds")
-// 	}
-// 	return (*v)[index], nil
-// }
+func (v *Vector) Clear() {
+	*v = nil
+}
+
+func (v *Vector) Copy() *Vector {
+	newVector := make(Vector, v.Len(), v.Cap())
+	for i := 0; i < v.Len(); i++ {
+		newVector[i] = (*v)[i]
+	}
+	return &newVector
+}
+
+// Get
+func (v *Vector) Get(index int) interface{} {
+	return (*v)[index]
+}
+
+//Set
+func (v *Vector) Set(index int, value interface{}) {
+	(*v)[index] = value
+}
 
 // PushBack
 func (v *Vector) PushBack(elem interface{}) {
@@ -136,11 +147,11 @@ func (v *Vector) RemoveRange(beginIndex int, endIndex int) error {
 }
 
 // Swap
-func (v Vector) Swap(i, j int) {
-	v[j], v[i] = v[i], v[j]
+func (v *Vector) Swap(i, j int) {
+	(*v)[j], (*v)[i] = (*v)[i], (*v)[j]
 }
 
 // Less
-func (v Vector) Less(i, j int) bool {
-	return util.Less(&v[i], &v[j])
+func (v *Vector) Less(i, j int) bool {
+	return util.Less(&(*v)[i], &(*v)[j])
 }
