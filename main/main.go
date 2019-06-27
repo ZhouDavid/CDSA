@@ -37,40 +37,25 @@ func (arr *Array) Set(i int, value interface{}) {
 
 func main() {
 	// rand.Seed(int64(time.Now().UnixNano()))
-	arrLen := 10
+	arrLen := 10000000 * 4
 	t0 := time.Now()
 	arr1 := make(Array, arrLen)
-	// arr2 := make(Array, arrLen)
+	arr2 := make(Array, arrLen)
 	for i := 0; i < arrLen; i++ {
 		arr1[i] = rand.Float64()
-		// arr2[i] = arr1[i]
+		arr2[i] = arr1[i]
 	}
-	// v1 := vector.NewVectorFromSlice(arr)
-	// v2 := v1.Copy()
-	// v3 := v1.Copy()
+
 	t1 := time.Now()
 	fmt.Printf("%v\n", t1.Sub(t0))
-	// t1 := time.Now()
-	// sort.Sort(&arr1)
-	// t2 := time.Now()
-	// fmt.Printf("standard sort arr:%v\n\n", t2.Sub(t1))
-
 	t2 := time.Now()
-	util.HeapSort(&arr1)
+	util.MultiThreadQuickSort(&arr2)
 	t3 := time.Now()
-	fmt.Printf("my quickSort arr:%v\n%v\n\n", t3.Sub(t2), arr1)
+	fmt.Printf("mutithread quickSort with insertion:%v\n\n", t3.Sub(t2))
+	t3 = time.Now()
+	util.MultiThreadQuickSort(&arr1)
+	t4 := time.Now()
+	fmt.Printf("multithread quickSort arr:%v\n\n", t4.Sub(t3))
 	fmt.Printf("%v\n\n", sort.IsSorted(&arr1))
-	// t3 = time.Now()
-	// util.QuickSort(v3)
-	// t4 := time.Now()
-	// fmt.Printf("QuickSort sort:%v\n\n", t4.Sub(t3))
-	// fmt.Printf("%v", (*v2)[23090*5-10:23090*5])
-
-	// h := heap.NewHeapFromSlice(v)
-	// v2 := vector.New()
-	// for h.Len() != 0 {
-	// 	v2.PushBack(h.Pop())
-	// }
-	// t3 := time.Now()
-	// fmt.Printf("heap sort:%d,%v", t3.Sub(t2), v2)
+	fmt.Printf("%v\n\n", sort.IsSorted(&arr2))
 }

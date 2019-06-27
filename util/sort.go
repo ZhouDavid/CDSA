@@ -19,6 +19,10 @@ func quickSort(data Sortable, lo int, hi int) {
 	if hi-lo <= 1 {
 		return
 	}
+	if hi-lo <= 12 {
+		insertionSort(data, lo, hi) // repalce with heap sort or merge sort
+		return
+	}
 	i := lo
 	j := hi - 1
 	for i < j {
@@ -37,6 +41,31 @@ func quickSort(data Sortable, lo int, hi int) {
 	quickSort(data, i+1, hi)
 }
 
+// func quickSort2(data Sortable, lo int, hi int) {
+// 	if hi-lo <= 1 {
+// 		return
+// 	}
+// 	if hi-lo > 10 {
+// 		i := lo
+// 		j := hi - 1
+// 		for i < j {
+// 			for i < j && !data.Less(j, lo) {
+// 				j--
+// 			}
+// 			for i < j && !data.Less(lo, i) {
+// 				i++
+// 			}
+// 			if i < j {
+// 				data.Swap(i, j)
+// 			}
+// 		}
+// 		data.Swap(i, lo)
+// 		quickSort2(data, lo, i)
+// 		quickSort2(data, i+1, hi)
+// 	} else {
+// 		insertionSort(data, lo, hi)
+// 	}
+// }
 func HeapSort(data heap.Heapable) {
 	h := heap.NewMaxHeap(data)
 	n := data.Len() - 1
@@ -45,6 +74,38 @@ func HeapSort(data heap.Heapable) {
 		h.SiftDown(0, i)
 	}
 }
+
+// func MQSort(data Sortable) {
+// 	mqSort(data, 0, data.Len())
+// }
+// func mqSort(data Sortable, lo int, hi int) {
+// 	if hi-lo < 1000 {
+// 		quickSort2(data, lo, hi)
+// 		return
+// 	}
+// 	i := lo
+// 	j := hi - 1
+// 	for i < j {
+// 		for i < j && !data.Less(j, lo) {
+// 			j--
+// 		}
+// 		for i < j && !data.Less(lo, i) {
+// 			i++
+// 		}
+// 		if i < j {
+// 			data.Swap(i, j)
+// 		}
+// 	}
+// 	data.Swap(i, lo)
+// 	var wg sync.WaitGroup
+// 	wg.Add(1)
+// 	go func() {
+// 		defer wg.Done()
+// 		mqSort(data, lo, i)
+// 	}()
+// 	mqSort(data, i+1, hi)
+// 	wg.Wait()
+// }
 
 // multi threads
 func MultiThreadQuickSort(data Sortable) {
